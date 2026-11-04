@@ -1,0 +1,132 @@
+:root {
+  --bg: #0b1220;
+  --panel: #151f33;
+  --line: #2a3a58;
+  --text: #f2f5fa;
+  --muted: #a9b6cc;
+  --primary: #2f7dff;
+  --ok: #1fa35a;
+  --warn: #f2a900;
+  --bad: #e5383b;
+  --info: #3a8dde;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, Roboto, sans-serif; }
+body { min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
+button, input, select { font: inherit; }
+
+.topbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #060b14; position: sticky; top: 0; z-index: 10; }
+.topbar h1 { font-size: 1.1rem; letter-spacing: .12em; margin: 0; flex: 1; }
+.chip { font-size: .8rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: var(--line); }
+.iconbtn { min-width: 48px; min-height: 48px; font-size: 1.4rem; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; }
+
+.screen { display: none; padding: 12px 16px 24px; }
+.view-start #screenStart, .view-main #screenMain, .view-setup #screenSetup { display: block; }
+
+.btn { min-height: 52px; padding: 10px 18px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--text); font-weight: 700; }
+.btn:active { filter: brightness(1.3); }
+.btn.primary { background: var(--primary); border-color: var(--primary); }
+.btn.warn { border-color: var(--warn); color: var(--warn); }
+.btn.big { min-height: 76px; font-size: 1.4rem; width: 100%; }
+.btn.huge { min-height: 110px; font-size: 2.2rem; width: 100%; }
+.btn:disabled { opacity: .45; }
+
+.startcard { max-width: 520px; margin: 0 auto; display: grid; gap: 14px; }
+.lead { font-size: 1.15rem; }
+.hint { color: var(--muted); font-size: .9rem; margin: 4px 0; }
+.error { color: #ff8a8c; font-weight: 700; }
+.warnbox { border: 2px solid var(--warn); border-radius: 12px; padding: 12px; background: #2a2210; line-height: 1.4; }
+
+/* Camera stage */
+.stage { position: relative; display: none; background: #000; overflow: hidden; touch-action: none; }
+.stage video { width: 100%; height: 100%; display: block; object-fit: fill; }
+.view-setup .stage { display: block; width: 100%; max-width: 900px; margin: 0 auto; }
+/* In operator view keep the video rendered (frames keep flowing) but tiny. */
+.view-main .stage { display: block; position: fixed; right: 8px; bottom: 8px; width: 96px; z-index: 5; border: 2px solid var(--line); border-radius: 6px; opacity: .9; }
+.view-main .stage .roibox { display: none; }
+.roibox { position: absolute; border: 3px solid #00e5ff; box-shadow: 0 0 0 9999px rgba(0,0,0,.35); cursor: move; }
+.roihandle { position: absolute; right: -18px; bottom: -18px; width: 36px; height: 36px; border-radius: 50%; background: #00e5ff; border: 3px solid #003a44; cursor: nwse-resize; }
+.stagemsg { position: absolute; inset: auto 0 0 0; background: rgba(0,0,0,.7); padding: 8px; text-align: center; font-weight: 700; }
+
+/* Operator screen */
+.banner { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.6rem; font-weight: 800; padding: 14px; border-radius: 14px; text-align: center; letter-spacing: .03em; border: 3px solid transparent; }
+.bicon { font-size: 1.6rem; }
+.s-off { background: #333c4d; }
+.s-wait { background: #1d3557; border-color: var(--info); }
+.s-tare { background: #183d2c; border-color: var(--ok); }
+.s-fill { background: #12395e; border-color: var(--primary); }
+.s-target { background: var(--ok); color: #fff; }
+.s-over { background: var(--bad); color: #fff; }
+.s-uncertain { background: #4d3a00; border-color: var(--warn); color: #ffd666; }
+.s-checkscale { background: var(--bad); color: #fff; border-color: #fff; }
+.s-paused { background: #3d3d3d; border-style: dashed; border-color: #aaa; }
+
+.netblock { text-align: center; margin: 10px 0 4px; }
+.netvalue { font-size: clamp(4rem, 26vw, 9rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.netvalue .unit { font-size: .35em; margin-left: .15em; color: var(--muted); }
+.netvalue.stale { color: var(--muted); text-decoration: line-through 4px; }
+.netlabel { color: var(--muted); font-weight: 700; letter-spacing: .15em; }
+
+.progress { position: relative; height: 34px; border-radius: 10px; background: var(--panel); border: 2px solid var(--line); overflow: hidden; margin-top: 10px; }
+.pfill { height: 100%; width: 0; background: var(--primary); }
+.pfill.near { background: var(--warn); }
+.pfill.done { background: var(--ok); }
+.pfill.over { background: var(--bad); }
+.remaining { text-align: center; font-size: 1.5rem; font-weight: 700; margin: 6px 0 10px; font-variant-numeric: tabular-nums; }
+
+.figures { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 0; padding: 10px 12px; background: var(--panel); border-radius: 12px; }
+.figures div { display: flex; flex-direction: column; }
+.figures dt { color: var(--muted); font-size: .85rem; }
+.figures dd { margin: 0; font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.message { min-height: 1.6em; font-size: 1.1rem; font-weight: 700; color: #ffd666; margin: 10px 0; text-align: center; }
+.actions { display: grid; gap: 10px; padding-right: 0; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.roithumb { display: block; margin: 12px auto 0; max-width: 60%; height: auto; image-rendering: pixelated; border: 1px solid var(--line); }
+
+/* Setup */
+.setupbar { display: flex; gap: 12px; align-items: center; margin: 10px 0; }
+details { background: var(--panel); border-radius: 12px; padding: 8px 12px; margin: 10px 0; }
+summary { font-weight: 800; font-size: 1.1rem; padding: 8px 0; cursor: pointer; }
+details label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+details input[type=number], details input:not([type]), details select { min-height: 44px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: #0d1626; color: var(--text); }
+details input[type=range] { flex: 1; min-width: 160px; }
+details input[type=checkbox] { width: 28px; height: 28px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.diag { display: grid; gap: 10px; }
+.diagimgs { display: grid; gap: 6px; }
+.diagimgs canvas { width: 100%; image-rendering: pixelated; background: #000; border: 1px solid var(--line); }
+.kv { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.kv th { text-align: left; color: var(--muted); font-weight: 600; padding: 4px 8px 4px 0; width: 40%; vertical-align: top; }
+.kv td { padding: 4px 0; font-weight: 700; word-break: break-word; }
+.ok { color: #6ee7a0; } .bad { color: #ff8a8c; }
+.teach { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 6px; }
+.file input { max-width: 100%; }
+
+@media (min-width: 900px) {
+  .view-main #screenMain { max-width: 640px; margin: 0 auto; }
+}
+
+/* Landscape (phone mounted sideways): two columns on the operator screen,
+   preview beside the controls in setup. */
+@media (orientation: landscape) and (max-height: 600px) {
+  .topbar { padding: 4px 12px; }
+  .iconbtn { min-height: 44px; }
+  .view-main #screenMain { display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: auto 1fr; gap: 6px 16px; padding: 8px 16px 8px; max-width: none; }
+  .view-main #banner { grid-column: 1 / -1; padding: 8px; font-size: 1.4rem; }
+  .mainleft { display: flex; flex-direction: column; justify-content: center; }
+  .mainright { display: flex; flex-direction: column; gap: 6px; }
+  .netblock { margin: 0; }
+  .netvalue { font-size: clamp(4rem, 34vh, 12rem); }
+  .remaining { font-size: 1.4rem; margin: 4px 0 0; }
+  .figures { padding: 6px 10px; gap: 2px 12px; }
+  .figures dd { font-size: 1.15rem; }
+  .message { margin: 2px 0; min-height: 1.3em; font-size: 1rem; }
+  .btn.big { min-height: 64px; font-size: 1.25rem; }
+  .roithumb { display: none; }
+  .view-main .stage { width: 110px; bottom: 6px; left: 6px; right: auto; }
+  .view-setup #screenSetup { padding-top: 4px; }
+  .view-setup .stage { position: fixed; left: 8px; top: 60px; width: calc(50vw - 16px); max-height: calc(100vh - 68px); z-index: 6; }
+  .view-setup #screenSetup { margin-left: 50vw; }
+}

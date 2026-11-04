@@ -1,0 +1,5 @@
+.venv/
+node_modules/
+photos and video/
+test-assets/demo.mp4
+.claude/

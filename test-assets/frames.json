@@ -1,0 +1,167 @@
+{
+ "width": 210,
+ "height": 60,
+ "format": "rgb24",
+ "frames": [
+  {
+   "frame": 5,
+   "seconds": 1,
+   "expected": "-32.5"
+  },
+  {
+   "frame": 128,
+   "seconds": 25.6,
+   "expected": "-32.0"
+  },
+  {
+   "frame": 165,
+   "seconds": 33,
+   "expected": "-31.5"
+  },
+  {
+   "frame": 202,
+   "seconds": 40.4,
+   "expected": "-28.5"
+  },
+  {
+   "frame": 208,
+   "seconds": 41.6,
+   "expected": "-30.0"
+  },
+  {
+   "frame": 240,
+   "seconds": 48,
+   "expected": "-28.5"
+  },
+  {
+   "frame": 257,
+   "seconds": 51.4,
+   "expected": "-27.0"
+  },
+  {
+   "frame": 293,
+   "seconds": 58.6,
+   "expected": "-25.5"
+  },
+  {
+   "frame": 331,
+   "seconds": 66.2,
+   "expected": "-24.0"
+  },
+  {
+   "frame": 367,
+   "seconds": 73.4,
+   "expected": "-24.5"
+  },
+  {
+   "frame": 372,
+   "seconds": 74.4,
+   "expected": "-22.5"
+  },
+  {
+   "frame": 375,
+   "seconds": 75,
+   "expected": "-22.0"
+  },
+  {
+   "frame": 392,
+   "seconds": 78.4,
+   "expected": "-22.5"
+  },
+  {
+   "frame": 402,
+   "seconds": 80.4,
+   "expected": "-20.5"
+  },
+  {
+   "frame": 435,
+   "seconds": 87,
+   "expected": "-19.5"
+  },
+  {
+   "frame": 461,
+   "seconds": 92.2,
+   "expected": "-18.0"
+  },
+  {
+   "frame": 485,
+   "seconds": 97,
+   "expected": "-16.5"
+  },
+  {
+   "frame": 507,
+   "seconds": 101.4,
+   "expected": "-15.0"
+  },
+  {
+   "frame": 535,
+   "seconds": 107,
+   "expected": "-13.5"
+  },
+  {
+   "frame": 560,
+   "seconds": 112,
+   "expected": "-12.0"
+  },
+  {
+   "frame": 595,
+   "seconds": 119,
+   "expected": "-10.5"
+  },
+  {
+   "frame": 627,
+   "seconds": 125.4,
+   "expected": "-9.5"
+  },
+  {
+   "frame": 631,
+   "seconds": 126.2,
+   "expected": "-9.0"
+  },
+  {
+   "frame": 637,
+   "seconds": 127.4,
+   "expected": "-9.5"
+  },
+  {
+   "frame": 642,
+   "seconds": 128.4,
+   "expected": "-9.0"
+  },
+  {
+   "frame": 657,
+   "seconds": 131.4,
+   "expected": "-8.5"
+  },
+  {
+   "frame": 668,
+   "seconds": 133.6,
+   "expected": "-8.0"
+  },
+  {
+   "frame": 730,
+   "seconds": 146,
+   "expected": "-7.5"
+  },
+  {
+   "frame": 740,
+   "seconds": 148,
+   "expected": "-8.0"
+  },
+  {
+   "frame": 772,
+   "seconds": 154.4,
+   "expected": "-7.5"
+  },
+  {
+   "frame": 790,
+   "seconds": 158,
+   "expected": "-8.5"
+  },
+  {
+   "frame": 807,
+   "seconds": 161.4,
+   "expected": "-8.0"
+  }
+ ]
+}
