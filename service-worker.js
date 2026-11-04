@@ -1,6 +1,6 @@
 // TareMate service worker: cache the app shell for offline use.
 // Camera frames are never cached or sent anywhere. Bump VERSION on each release.
-const VERSION = 'taremate-v0.2.0';
+const VERSION = 'taremate-v0.2.1';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css',
   './src/app.js', './src/camera.js', './src/frame-processing.js', './src/weight-reader.js', './src/display-locator.js',

@@ -598,9 +598,17 @@ $('btnResetAll').addEventListener('click', () => {
 
 // ---------------------------------------------------------------- PWA
 if ('serviceWorker' in navigator && !location.search.includes('nosw')) {
+  const hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  // A new version took over. Reload straight away only on the start screen;
+  // never interrupt monitoring.
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return;
+    if (view === 'start') location.reload();
+    else showMessage('TareMate has been updated. The new version loads next time you open the app.', 10000);
+  });
 }
-$('buildInfo').textContent = 'TareMate 0.2.0';
+$('buildInfo').textContent = 'TareMate 0.2.1';
 
 applyAudio();
 populateSetup();
