@@ -1,6 +1,8 @@
 // TareMate service worker: cache the app shell for offline use.
 // Camera frames are never cached or sent anywhere. Bump VERSION on each release.
-const VERSION = 'taremate-v0.2.1';
+// Install fetches with cache: 'reload' so the new cache never picks up stale
+// copies from the browser's HTTP cache (GitHub Pages sends max-age=600).
+const VERSION = 'taremate-v0.2.2';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './styles/app.css',
   './src/app.js', './src/camera.js', './src/frame-processing.js', './src/weight-reader.js', './src/display-locator.js',
@@ -10,7 +12,7 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {

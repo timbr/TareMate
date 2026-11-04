@@ -608,7 +608,7 @@ if ('serviceWorker' in navigator && !location.search.includes('nosw')) {
     else showMessage('TareMate has been updated. The new version loads next time you open the app.', 10000);
   });
 }
-$('buildInfo').textContent = 'TareMate 0.2.1';
+$('buildInfo').textContent = 'TareMate 0.2.2';
 
 applyAudio();
 populateSetup();
