@@ -103,6 +103,10 @@ details input[type=checkbox] { width: 28px; height: 28px; }
 .ok { color: #6ee7a0; } .bad { color: #ff8a8c; }
 .teach { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 6px; }
 .file input { max-width: 100%; }
+.autoroi { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+.autoroi .btn { min-width: 180px; }
+label.inline { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; }
+label.inline input { width: 28px; height: 28px; }
 
 @media (min-width: 900px) {
   .view-main #screenMain { max-width: 640px; margin: 0 auto; }

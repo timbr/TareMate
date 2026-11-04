@@ -86,8 +86,14 @@
   <section id="screenSetup" class="screen">
     <div class="setupbar">
       <button id="btnDone" class="btn primary">DONE</button>
-      <span class="hint">Drag the box over the big weight digits and the minus sign. Keep it inside the LCD's blue border and away from "GROSS kg".</span>
+      <span class="hint">Press FIND DISPLAY, or drag the box over the big weight digits and the minus sign (not "GROSS kg").</span>
     </div>
+
+    <div class="autoroi">
+      <button id="btnAutoRoi" class="btn primary">FIND DISPLAY</button>
+      <p id="autoRoiInfo" class="hint">Finds the weight digits automatically. You can still drag the box by hand.</p>
+    </div>
+    <label class="inline"><input id="chkAutoLocate" type="checkbox"> Re-find the display automatically when readings are lost</label>
 
     <details open>
       <summary>Camera</summary>

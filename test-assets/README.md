@@ -10,3 +10,6 @@
 To regenerate from a new video (see `tools/`): extract raw ROI frames with ffmpeg
 (`-vf "fps=5,crop=...,scale=210:60" -f rawvideo -pix_fmt rgb24`), then run `tools/eval-video.mjs`,
 `tools/collect-glyphs.mjs` and `tools/build-templates.mjs`.
+
+- `fullframes.rgb` / `fullframes.json`: one 640×360 rgb24 full frame from each of the four phone videos, used by `tests/display-locator.test.js` (expected box position in the JSON).
+- `demo-mounted.mp4`: 100 s, 960×540 clip of `PXL_20261104_135221063.mp4` (from 20 s), for `?demo=` mode.

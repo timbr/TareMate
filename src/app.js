@@ -2,7 +2,8 @@
 // stability -> weighing machine -> UI + audio.
 
 import { Camera, CameraError } from './camera.js';
-import { grabRoi, clampRoi, fingerprint } from './frame-processing.js';
+import { grabRoi, grabFrame, clampRoi, fingerprint } from './frame-processing.js';
+import { locateDisplay } from './display-locator.js';
 import { readWeight, segment, glyphVector } from './weight-reader.js';
 import { DEFAULT_TEMPLATES } from './digit-templates.js';
 import { createReadingFilter } from './reading-filter.js';
@@ -20,6 +21,8 @@ const video = $('video');
 const camera = new Camera(video);
 const audio = new AudioFeedback();
 const workCanvas = document.createElement('canvas');
+const frameCanvas = document.createElement('canvas');
+const probeCanvas = document.createElement('canvas');
 
 let filter, stability, machine;
 let loopTimer = null;
@@ -35,6 +38,9 @@ let messageTimer = null;
 let wakeLock = null;
 let fileMode = false;
 let view = 'start';
+let lastValidTime = 0;
+let lastLocateTry = 0;
+let dragging = false;
 
 function rebuildPipeline(keepMachine = true) {
   filter = createReadingFilter(settings.filter);
@@ -88,6 +94,32 @@ function showMessage(text, ms = 6000) {
 // ---------------------------------------------------------------- processing loop
 function templates() { return [...DEFAULT_TEMPLATES, ...(settings.customTemplates || [])]; }
 
+/**
+ * Look for the weight digits in the whole camera frame. Each candidate box is
+ * checked by actually reading it; with requireValid only a box that gives a
+ * valid reading is returned.
+ * @returns {{roi, raw, validated:boolean} | null}
+ */
+function autoLocate({ requireValid = true } = {}) {
+  const full = grabFrame(video, frameCanvas, 640);
+  if (!full) return null;
+  const cands = locateDisplay(full);
+  for (const c of cands) {
+    const img = grabRoi(video, c.roi, probeCanvas);
+    const raw = img && readWeight(img, { ...settings.reader, templates: templates() });
+    if (raw?.valid) return { roi: c.roi, raw, validated: true };
+  }
+  if (!requireValid && cands.length) return { roi: cands[0].roi, raw: null, validated: false };
+  return null;
+}
+
+function applyRoi(roi) {
+  settings.roi = clampRoi(roi);
+  persist();
+  filter.reset(); stability.reset();
+  if (view === 'setup') positionRoiBox();
+}
+
 function startLoop() {
   clearInterval(loopTimer);
   loopTimer = setInterval(tick, Math.round(1000 / Math.max(1, Math.min(15, settings.sampleFps))));
@@ -117,6 +149,19 @@ function tick() {
     raw = img
       ? readWeight(img, { ...settings.reader, templates: templates(), timestamp: now })
       : { valid: false, value: null, text: '', reason: 'no video frame', confidence: 0, timestamp: now };
+  }
+  if (fresh && raw.valid) lastValidTime = now;
+  // Re-find the display if readings have been lost for a while (phone bumped,
+  // box never set). Only a box that reads validly is adopted.
+  if ((fresh || !settings.roi) && settings.autoLocate && !dragging && now - lastValidTime > 3000 && now - lastLocateTry > 2000) {
+    lastLocateTry = now;
+    const found = autoLocate({ requireValid: true });
+    if (found) {
+      applyRoi(found.roi);
+      lastValidTime = now;
+      showMessage('Display found automatically.', 5000);
+      $('autoRoiInfo').textContent = `Display found automatically, reading ${found.raw.text} kg.`;
+    }
   }
   lastRaw = raw;
   const f = filter.push(raw, { fresh });
@@ -329,12 +374,14 @@ document.addEventListener('visibilitychange', async () => {
 });
 
 // ---------------------------------------------------------------- ROI editing
+const PLACEHOLDER_ROI = { x: 0.3, y: 0.4, w: 0.4, h: 0.15 };
 function positionRoiBox() {
   const box = $('roiBox');
   const stage = $('stage');
   if (video.videoWidth) stage.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
-  if (!settings.roi) settings.roi = { x: 0.3, y: 0.4, w: 0.4, h: 0.15 };
-  const r = settings.roi;
+  // Placeholder position only: not saved until the user drags it or the
+  // display is found automatically.
+  const r = settings.roi || PLACEHOLDER_ROI;
   box.hidden = false;
   Object.assign(box.style, { left: `${r.x * 100}%`, top: `${r.y * 100}%`, width: `${r.w * 100}%`, height: `${r.h * 100}%` });
 }
@@ -352,11 +399,12 @@ video.addEventListener('loadedmetadata', positionRoiBox);
   stage.addEventListener('pointerdown', (e) => {
     if (view !== 'setup') return;
     const p = frac(e);
-    const r = settings.roi || { x: p.x, y: p.y, w: 0.05, h: 0.05 };
+    const r = settings.roi || PLACEHOLDER_ROI;
     let mode = 'new';
     if (e.target.classList.contains('roihandle')) mode = 'resize';
     else if (e.target === box) mode = 'move';
     drag = { mode, start: p, roi: { ...r } };
+    dragging = true;
     if (mode === 'new') settings.roi = { x: p.x, y: p.y, w: 0.03, h: 0.03 };
     stage.setPointerCapture(e.pointerId);
     e.preventDefault();
@@ -374,6 +422,8 @@ video.addEventListener('loadedmetadata', positionRoiBox);
   const end = () => {
     if (!drag) return;
     drag = null;
+    dragging = false;
+    lastValidTime = performance.now();
     persist();
     filter.reset(); stability.reset();
   };
@@ -432,6 +482,7 @@ function populateSetup() {
   $('numMinReads').value = st.minReadings;
   $('txtLastDigits').value = r.allowedLastDigits;
   $('chkSign').checked = r.requireSign;
+  $('chkAutoLocate').checked = settings.autoLocate;
   $('numMinScore').value = r.minScore;
   $('numMinMargin').value = r.minMargin;
   $('rngVolume').value = a.volume;
@@ -455,6 +506,7 @@ function readSetup() {
     noiseKg: num('numNoise', m.noiseKg),
   };
   settings.sampleFps = num('numFps', settings.sampleFps);
+  settings.autoLocate = $('chkAutoLocate').checked;
   settings.filter = { ...settings.filter, agree: Math.round(num('numAgree', settings.filter.agree)), uncertainAfterMs: num('numUncertain', settings.filter.uncertainAfterMs) };
   settings.stability = { ...settings.stability, windowMs: num('numWindow', settings.stability.windowMs), toleranceKg: num('numTol', settings.stability.toleranceKg), minReadings: Math.round(num('numMinReads', settings.stability.minReadings)) };
   settings.reader = { ...settings.reader, allowedLastDigits: $('txtLastDigits').value.replace(/[^0-9]/g, ''), requireSign: $('chkSign').checked, minScore: num('numMinScore', settings.reader.minScore), minMargin: num('numMinMargin', settings.reader.minMargin) };
@@ -523,6 +575,14 @@ $('fileVideo').addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   if (file) { await startFile(URL.createObjectURL(file)); startLoop(); }
 });
+$('btnAutoRoi').addEventListener('click', () => {
+  const found = autoLocate({ requireValid: false });
+  if (!found) { $('autoRoiInfo').textContent = 'Could not find the weight digits. Check the display is lit and in view, or drag a box by hand.'; return; }
+  applyRoi(found.roi);
+  $('autoRoiInfo').textContent = found.validated
+    ? `Found the display, reading ${found.raw.text} kg.`
+    : 'Found something that looks like the digits but could not read it yet. Check the box, or drag it by hand.';
+});
 $('btnTeach').addEventListener('click', teach);
 $('btnClearTeach').addEventListener('click', () => { settings.customTemplates = []; persist(); showTeachInfo('Forgotten.'); });
 $('btnTestSound').addEventListener('click', () => { applyAudio(); audio.test(); });
@@ -540,7 +600,7 @@ $('btnResetAll').addEventListener('click', () => {
 if ('serviceWorker' in navigator && !location.search.includes('nosw')) {
   navigator.serviceWorker.register('service-worker.js').catch(() => {});
 }
-$('buildInfo').textContent = 'TareMate 0.1.0';
+$('buildInfo').textContent = 'TareMate 0.2.0';
 
 applyAudio();
 populateSetup();

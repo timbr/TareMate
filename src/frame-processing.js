@@ -40,6 +40,19 @@ export function grabRoi(video, roi, canvas) {
   return ctx.getImageData(0, 0, w, WORK_HEIGHT);
 }
 
+/** Draw the whole video frame scaled to maxW wide; returns ImageData or null. */
+export function grabFrame(video, canvas, maxW = 640) {
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw || !vh) return null;
+  const w = Math.min(maxW, vw), h = Math.round(vh * w / vw);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(video, 0, 0, w, h);
+  return ctx.getImageData(0, 0, w, h);
+}
+
 /** Cheap fingerprint of an ImageData, used to spot a frozen picture. */
 export function fingerprint(img) {
   let h = 0;

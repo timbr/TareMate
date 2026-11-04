@@ -10,7 +10,7 @@ processing runs on the phone, and camera frames are never stored or sent anywher
 ## Running it
 
 ```bash
-npm test                 # 29 tests: weighing logic, stability, filter, recogniser on real frames
+npm test                 # 34 tests: weighing logic, stability, filter, recogniser, display locator
 node tools/serve.mjs     # dev server on http://localhost:8080
 ```
 
@@ -34,14 +34,17 @@ Bump `VERSION` in `service-worker.js` with each release.
 ### Demo without the scale
 
 `http://localhost:8080/?demo=test-assets/demo.mp4` plays a 960×540 clip of the commissioning
-video through the full pipeline. The crop box still has to be set in setup. In setup you can also
-choose any video file from the phone instead of the live camera.
+video through the full pipeline, and `?demo=test-assets/demo-mounted.mp4` plays a clip from the
+later, further-away videos (cleaned screen, reflection of the phone in the window). The display is
+found automatically. In setup you can also choose any video file from the phone instead of the
+live camera.
 
 ## Using it
 
 1. **START** starts the camera, unlocks sound and keeps the screen awake.
-2. The first time, setup opens. Drag a box over the large digits **and** the minus sign. Keep it
-   inside the LCD's blue border and away from `GROSS kg`. Check that *Frame result* shows `valid`.
+2. The first time, setup opens and the app looks for the display by itself. The box jumps onto the
+   digits within a few seconds. If it doesn't, press **FIND DISPLAY**, or drag a box over the large
+   digits **and** the minus sign (not `GROSS kg`). Check that *Frame result* shows `valid`.
 3. Attach the empty sack, wait for it to settle, then press **CAPTURE TARE**. Tare is only
    accepted when the display is stable. The message line explains why it's refused when it isn't.
 4. Fill. Spoken "20 kilograms" and "22 kilograms", then beeps that speed up from 23 kg, then the
@@ -52,7 +55,9 @@ The layout is designed for a phone mounted in **landscape** (the installed app l
 
 ### If the phone position changes
 
-Re-draw the crop box in setup. If the viewing angle makes the digits look different, show a steady
+With *Re-find the display automatically* on (the default), the app searches the whole camera
+image whenever it has had no valid reading for 3 seconds, and moves the box only to a place that
+gives a valid reading. Otherwise press **FIND DISPLAY** or re-draw the box in setup. If the viewing angle makes the digits look different, show a steady
 reading, type it into **Teach digits** (for example `-32.5`) and press *Teach*. This stores the digit
 shapes on the phone, and they're used alongside the built-in ones. Do this a few times with
 readings that between them contain every digit.
@@ -98,6 +103,31 @@ These numbers come from **one handheld video**. Re-check them from the real moun
 lighting (setup shows a live *valid rate*), then do supervised fills with known weights before
 relying on the app.
 
+### Automatic display finding (`src/display-locator.js`)
+
+The whole frame is scaled to 640 px wide. A local-contrast blue-ink mask is built, long straight
+runs (panel border, button outlines) are removed, and each bright backlit panel blob is
+re-thresholded on its own. In the result the locator looks for the weight's structure: 2–4
+equal-height digits in a row, a decimal point before the last one, and a minus to the left. The
+box is laid out from the last digit, because the sign slot is fixed and the digits are right
+aligned. Each candidate box is then actually read, and only a valid reading is accepted. It takes
+about 10 ms per search, and the app runs one at most every 2 s, only while readings are failing.
+
+### Results on all four videos (November 2026)
+
+| Video | Notes | Located | Valid frames: old templates | Unseen-video test | All templates |
+|---|---|---|---|---|---|
+| 121605137 | first, close up, handheld | 100% | 88% | 88% | 95% |
+| 133247318 | further away, dirty screen, reflections | 87% of checks | 8% | 93% | 93% |
+| 133641094 | further away, dirty screen | 99% | 47% | 91% | 91% |
+| 135221063 | further away, cleaned screen, phone reflection | 100% | 30% | 79% | 97% |
+
+"Unseen-video test" means templates built from the other three videos only, which is the best
+estimate of how a new mount position will do. The templates (`src/digit-templates.js`, one per
+digit per video, 40 in all) were self-trained with `tools/eval-auto.mjs` and `tools/self-train.mjs`,
+then checked by eye on a contact sheet. Suspicious accepted values (−4.5, −30.5) were checked
+against the video frames, and the display really showed them.
+
 ## Layout
 
 ```text
@@ -107,6 +137,7 @@ src/
   camera.js            getUserMedia, camera choice, zoom, frame counting, error messages
   frame-processing.js  ROI crop and scale to 60 px high, frame fingerprint
   weight-reader.js     recogniser (pure, runs in Node too)
+  display-locator.js   finds the weight digits in the whole frame (pure)
   digit-templates.js   generated digit templates
   reading-filter.js    N-frame consensus, staleness and uncertainty
   stability-detector.js  windowed stability, median tare
@@ -115,7 +146,7 @@ src/
   settings.js          localStorage settings
 tests/                 node:test suites
 test-assets/           verified frames (frames.rgb/.json), per-frame readings, demo.mp4
-tools/                 dev server, video analysis, template builder, icon script (Python via uv)
+tools/                 dev server, video analysis (eval-auto, eval-locator), template self-training, icon script (Python via uv)
 ```
 
 Regenerate the icons with: `uv venv .venv && uv pip install --python .venv pillow && uv run --python .venv python tools/make_icons.py`.

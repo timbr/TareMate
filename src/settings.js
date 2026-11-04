@@ -12,6 +12,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   zoom: null,
   // ROI as fractions of the video frame (0..1). Null until calibrated.
   roi: null,
+  // Find the display automatically when no box is set or readings are lost.
+  autoLocate: true,
   sampleFps: 5,
   machine: { ...MACHINE_DEFAULTS },
   stability: { ...STABILITY_DEFAULTS },
